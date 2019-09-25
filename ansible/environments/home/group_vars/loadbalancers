@@ -1,0 +1,4 @@
+api_backend_0: "xn--8--0-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf" # "к8с-управник-0.костић.дом"
+api_backend_1: "xn--8--1-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf" # "к8с-управник-1.костић.дом"
+api_backend_2: "xn--8--2-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf" # "к8с-управник-2.костић.дом"
+ingress_lb_ip: 10.0.100.10

@@ -1,0 +1,20 @@
+---
+- name: Install NTP daemon
+  dnf:
+    name: ntp
+    state: present
+    update_cache: yes
+
+- name: Write NTP configuration
+  lineinfile:
+    path: "{{ ntp_config_file }}"
+    line: |
+        restrict {{ ntp_network }} mask {{ ntp_netmask }} nomodify notrap
+        server {{ ntp_primary_upstream }}
+        server {{ ntp_secondary_upstream }}
+    
+- name: Enable and start NTP server
+  systemd:
+    name: ntpd
+    state: restarted
+    enabled: yes

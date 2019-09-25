@@ -1,0 +1,7 @@
+[all:vars]
+ansible_user = root
+ansible_become = true
+ansible_python_interpreter = /usr/bin/python2
+
+[web_servers]
+gnom.vm ansible_host=46.101.232.126

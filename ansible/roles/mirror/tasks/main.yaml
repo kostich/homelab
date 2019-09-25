@@ -1,0 +1,136 @@
+---
+
+- name: Install Mirror dependencies
+  dnf:
+    name: ["dnf-plugins-core", "httpd", "cronie", "crontabs", "mod_ssl"]
+    state: present
+    update_cache: yes
+
+- name: Configure dnf to allow more parallel downloads
+  lineinfile:
+    path: /etc/dnf/dnf.conf
+    line: 'max_parallel_downloads=10'
+    create: yes
+
+- name: Disable the welcome page, display directory index by default
+  file:
+    path: /etc/httpd/conf.d/welcome.conf
+    state: absent
+
+- name: Copy TLS key file
+  copy:
+    src: "{{ role_path }}/../../certs/ogledalo.kostic.dom/ogledalo.kostic.dom.key"
+    dest: "/etc/pki/tls/private/ogledalo.kostic.dom.key"
+    owner: root
+    group: root
+    mode: 0664
+
+- name: Copy TLS crt file
+  copy:
+    src: "{{ role_path }}/../../certs/ogledalo.kostic.dom/ogledalo.kostic.dom.crt"
+    dest: "/etc/pki/tls/private/ogledalo.kostic.dom.crt"
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Configure httpd to use our crt file
+  lineinfile:
+    path: /etc/httpd/conf.d/ssl.conf
+    regexp: '^SSLCertificateFile'
+    line: SSLCertificateFile /etc/pki/tls/private/ogledalo.kostic.dom.crt
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Configure httpd to use our key file
+  lineinfile:
+    path: /etc/httpd/conf.d/ssl.conf
+    regexp: '^SSLCertificateKeyFile'
+    line: SSLCertificateKeyFile /etc/pki/tls/private/ogledalo.kostic.dom.key
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Redirect HTTP traffic to HTTPS
+  blockinfile:
+    dest: /etc/httpd/conf.d/80to443.conf
+    block: |
+      NameVirtualHost *:80
+      <VirtualHost *:80>
+        RewriteEngine On
+        RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=302,L]
+      </VirtualHost>
+    create: yes
+
+- name: Configure Apache to start on bootup
+  systemd:
+    name: httpd
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+
+- name: Import docker-ce gpg key to rpm db
+  rpm_key:
+    key: https://download.docker.com/linux/fedora/gpg
+    state: present
+
+- name: Add the docker-ce repository
+  yum_repository:
+    name: docker-ce-stable
+    description: Docker CE Stable - $basearch
+    baseurl: https://download.docker.com/linux/fedora/$releasever/$basearch/stable/
+
+- name: Import google-chrome gpg key to rpm db
+  rpm_key:
+    key: https://dl.google.com/linux/linux_signing_key.pub
+    state: present
+
+- name: Add the google-chrome repository
+  yum_repository:
+    name: google-chrome
+    description: google-chrome
+    baseurl: "https://dl.google.com/linux/chrome/rpm/stable/x86_64"
+    enabled: yes
+    gpgcheck: yes
+    gpgkey: "https://dl.google.com/linux/linux_signing_key.pub"
+
+- name: Import vscode gpg key to rpm db
+  rpm_key:
+    key: https://packages.microsoft.com/keys/microsoft.asc
+    state: present
+
+- name: Add the vscode repository
+  yum_repository:
+    name: vscode
+    description: Visual Studio Code
+    baseurl: "https://packages.microsoft.com/yumrepos/vscode"
+    enabled: yes
+    gpgcheck: yes
+    gpgkey: "https://packages.microsoft.com/keys/microsoft.asc"
+
+- name: Create the update-mirror.sh script
+  template:
+    src: "{{ playbook_dir }}/../../roles/mirror/templates/update-mirror.sh.j2"
+    dest: /usr/bin/update-mirror.sh
+    owner: root
+    group: root
+    mode: 755
+
+# Note: Time-intensive, consider commenting out and running manually
+# (adapt setup-infra accordingly) when on a slow connection
+- name: Create the cron directory if missing
+  file:
+    path: /var/spool/cron
+
+- name: Create the update-mirror.sh cronjob
+  cron:
+    name: "update mirror"
+    minute: "11"
+    hour: "1,4,7,10,13,16,19,22"
+    job: "/usr/bin/update-mirror.sh &> /dev/null"
+    state: present
+    user: root
+
+- name: Setup/update mirror
+  command: bash /usr/bin/update-mirror.sh
+  become: yes

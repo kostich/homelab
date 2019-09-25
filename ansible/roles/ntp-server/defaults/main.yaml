@@ -1,0 +1,5 @@
+ntp_network: 10.0.0.0
+ntp_netmask: 255.255.0.0
+ntp_primary_upstream: time.google.com
+ntp_secondary_upstream: rs.pool.ntp.org
+ntp_config_file: /etc/ntp.conf

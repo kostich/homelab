@@ -1,0 +1,96 @@
+---
+
+- name: Install Kubernetes requirements
+  dnf:
+    name: ["kubeadm", "kubelet", "cri-tools", "kubernetes-cni", "docker-ce", "lvm2"]
+    state: latest
+    update_cache: yes
+
+- name: Start and enable Docker
+  systemd:
+    name: docker
+    daemon-reload: yes
+    enabled: yes
+    state: restarted
+
+- name: Configure Docker to use the systemd cgroup driver
+  template:
+    src: "{{ role_path }}/templates/daemon.json.j2"
+    dest: /etc/docker/daemon.json
+    mode: 0664
+    owner: root
+    group: root
+
+- name: Create the docker.service.d folder
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+
+- name: Restart Docker
+  systemd:
+    name: docker
+    daemon-reload: yes
+    enabled: yes
+    state: restarted
+
+- name: Tell NetworkManager to not handle the Calico's cali* and tunl* ifaces
+  blockinfile:
+    create: yes
+    dest: /etc/NetworkManager/conf.d/calico.conf
+    block: |
+      [keyfile]
+      unmanaged-devices=interface-name:cali*;interface-name:tunl*
+
+- name: Restart NetworkManager
+  systemd:
+    name: NetworkManager
+    state: restarted
+
+- name: Configure net.netfilter.nf_conntrack_max for Calico
+  sysctl:
+    name: net.netfilter.nf_conntrack_max
+    value: "1000000"
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Configure net.ipv4.conf.all.rp_filter for Calico
+  sysctl:
+    name: net.ipv4.conf.all.rp_filter
+    value: "0"
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Start and enable Kubelet
+  systemd:
+    name: kubelet
+    daemon-reload: yes
+    enabled: yes
+    state: restarted
+
+- name: Reset any existing cluster data
+  command: kubeadm reset -f
+
+- name: Remove etcd data folder
+  file:
+    path: /var/lib/etcd
+    state: absent
+
+- name: Remove rook data folder
+  file:
+    path: /var/lib/rook
+    state: absent
+
+- name: Reset IPTables rules
+  command: "{{ item }}"
+  with_items:
+    - iptables -F
+    - iptables -t nat -F
+    - iptables -t mangle -F
+    - iptables -X
+
+- name: Join the node as a worker to the cluster
+  command: "{{ hostvars[groups['k8s_initial_controller'][0]].kubeadm_worker_join_string }}"
+  retries: 3
+  delay: 3

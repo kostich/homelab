@@ -1,0 +1,38 @@
+[all:vars]
+ansible_user = fedora
+ansible_become = true
+ansible_python_interpreter = /usr/bin/python3
+
+[dns_servers]
+home-lb-dns-0 ansible_host=10.0.0.10 # using IP because we don't have DNS yet while we bootstrap
+
+[loadbalancers]
+home-lb-dns-0 ansible_host=10.0.0.10
+
+[k8s_controllers]
+home-k8s-controller-0 ansible_host=xn--8--0-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf # к8с-управник-0.костић.дом
+home-k8s-controller-1 ansible_host=xn--8--1-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf # к8с-управник-1.костић.дом
+home-k8s-controller-2 ansible_host=xn--8--2-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf # к8с-управник-2.костић.дом
+
+[k8s_initial_controller]
+home-k8s-controller-0 ansible_host=xn--8--0-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf # к8с-управник-0.костић.дом
+
+[k8s_joined_controllers]
+home-k8s-controller-1 ansible_host=xn--8--1-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf # к8с-управник-1.костић.дом
+home-k8s-controller-2 ansible_host=xn--8--2-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf # к8с-управник-2.костић.дом
+
+[k8s_workers_generic]
+home-k8s-worker-generic-0 ansible_host=xn--8---0-5ve2ajzpf8aqoho1a1i.xn--h1admmf5m.xn--d1aqf # к8с-радник-опште-0.костић.дом
+home-k8s-worker-generic-1 ansible_host=xn--8---1-5ve2ajzpf8aqoho1a1i.xn--h1admmf5m.xn--d1aqf # к8с-радник-опште-1.костић.дом
+home-k8s-worker-generic-2 ansible_host=xn--8---2-5ve2ajzpf8aqoho1a1i.xn--h1admmf5m.xn--d1aqf # к8с-радник-опште-2.костић.дом
+
+[k8s_workers_storage]
+home-k8s-worker-storage-0 ansible_host=xn--8---0-5veb4ack3adrfbq3a5cri0a5k.xn--h1admmf5m.xn--d1aqf # к8с-радник-складиште-0.костић.дом
+home-k8s-worker-storage-1 ansible_host=xn--8---1-5veb4ack3adrfbq3a5cri0a5k.xn--h1admmf5m.xn--d1aqf # к8с-радник-складиште-1.костић.дом
+home-k8s-worker-storage-2 ansible_host=xn--8---2-5veb4ack3adrfbq3a5cri0a5k.xn--h1admmf5m.xn--d1aqf # к8с-радник-складиште-2.костић.дом
+
+[mirrors]
+home-mirror-0 ansible_host=xn--80afdd3adpg.xn--h1admmf5m.xn--d1aqf # огледало.костић.дом
+
+[registries]
+home-registry-0 ansible_host=xn--80affn5ahdcfkc.xn--h1admmf5m.xn--d1aqf # регистратор.костић.дом

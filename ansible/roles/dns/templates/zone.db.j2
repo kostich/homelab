@@ -1,0 +1,15 @@
+{{ domain }}.        IN  SOA dns.{{ domain }}. {{ dns_master }}. 2019092211 7200 3600 1209600 3600
+*.xn--h1admmf5m.xn--d1aqf.                           IN A    10.0.64.1     ; *.костић.дом. (resolves to the LoadBalancer IP pointing to the K8s ingress controller)
+xn--d1asm.xn--h1admmf5m.xn--d1aqf.                   IN A    10.0.0.10     ; днс.костић.дом.
+xn--8-stbw.xn--h1admmf5m.xn--d1aqf.                  IN A    10.0.0.10     ; к8с.костић.дом.
+xn--80afdd3adpg.xn--h1admmf5m.xn--d1aqf.             IN A    10.0.0.20     ; огледало.костић.дом.
+xn--80affn5ahdcfkc.xn--h1admmf5m.xn--d1aqf.          IN A    10.0.0.30     ; регистратор.костић.дом.
+xn--8--0-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf.    IN A    10.0.240.2    ; к8с-управник-0.костић.дом.
+xn--8--1-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf.    IN A    10.0.240.3    ; к8с-управник-1.костић.дом.
+xn--8--2-63dm6blf2atmk3a.xn--h1admmf5m.xn--d1aqf.    IN A    10.0.240.4    ; к8с-управник-2.костић.дом.
+xn--8---0-5ve2ajzpf8aqoho1a1i.xn--h1admmf5m.xn--d1aqf.      IN A    10.0.240.20   ; к8с-радник-опште-0.костић.дом.
+xn--8---1-5ve2ajzpf8aqoho1a1i.xn--h1admmf5m.xn--d1aqf.      IN A    10.0.240.21   ; к8с-радник-опште-1.костић.дом.
+xn--8---2-5ve2ajzpf8aqoho1a1i.xn--h1admmf5m.xn--d1aqf.      IN A    10.0.240.22   ; к8с-радник-опште-2.костић.дом.
+xn--8---0-5veb4ack3adrfbq3a5cri0a5k.xn--h1admmf5m.xn--d1aqf.  IN A    10.0.240.30   ; к8с-радник-складиште-0.костић.дом.
+xn--8---1-5veb4ack3adrfbq3a5cri0a5k.xn--h1admmf5m.xn--d1aqf.  IN A    10.0.240.31   ; к8с-радник-складиште-1.костић.дом.
+xn--8---2-5veb4ack3adrfbq3a5cri0a5k.xn--h1admmf5m.xn--d1aqf.  IN A    10.0.240.32   ; к8с-радник-складиште-2.костић.дом.

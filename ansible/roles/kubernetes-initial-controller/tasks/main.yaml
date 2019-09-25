@@ -1,0 +1,190 @@
+---
+
+- name: Install Kubernetes requirements
+  dnf:
+    name: ["kubeadm", "kubelet", "cri-tools", "kubernetes-cni", "docker-ce"]
+    state: latest
+    update_cache: yes
+
+- name: Start and enable Docker
+  systemd:
+    name: docker
+    daemon-reload: yes
+    enabled: yes
+    state: restarted
+
+- name: Configure Docker to use the systemd cgroup driver
+  template:
+    src: "{{ role_path }}/templates/daemon.json.j2"
+    dest: /etc/docker/daemon.json
+    mode: 0664
+    owner: root
+    group: root
+
+- name: Create the docker.service.d folder
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+
+- name: Restart Docker
+  systemd:
+    name: docker
+    daemon-reload: yes
+    enabled: yes
+    state: restarted
+
+- name: Start and enable Kubelet
+  systemd:
+    name: kubelet
+    daemon-reload: yes
+    enabled: yes
+    state: restarted
+
+- name: Reset any existing cluster data
+  command: kubeadm reset -f
+
+- name: Remove etcd data folder
+  file:
+    path: /var/lib/etcd
+    state: absent
+
+- name: Remove rook data folder
+  file:
+    path: /var/lib/rook
+    state: absent
+
+- name: Reset IPTables rules
+  command: "{{ item }}"
+  with_items:
+    - iptables -F
+    - iptables -t nat -F
+    - iptables -t mangle -F
+    - iptables -X
+
+- name: Write the kubeadm config file
+  template:
+    src: "{{ role_path }}/templates/kubeadm-config.yaml.j2"
+    dest: /root/kubeadm-config.yaml
+    mode: 0660
+    owner: root
+    group: root
+
+- name: Tell NetworkManager to not handle the Calico's cali* and tunl* ifaces
+  blockinfile:
+    create: yes
+    dest: /etc/NetworkManager/conf.d/calico.conf
+    block: |
+      [keyfile]
+      unmanaged-devices=interface-name:cali*;interface-name:tunl*
+
+- name: Restart NetworkManager
+  systemd:
+    name: NetworkManager
+    state: restarted
+
+- name: Configure net.netfilter.nf_conntrack_max for Calico
+  sysctl:
+    name: net.netfilter.nf_conntrack_max
+    value: "1000000"
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Configure net.ipv4.conf.all.rp_filter for Calico
+  sysctl:
+    name: net.ipv4.conf.all.rp_filter
+    value: "0"
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+- name: Write the calico yaml file
+  template:
+    src: "{{ role_path }}/templates/calico.yaml.j2"
+    dest: /root/calico.yaml
+    mode: 0660
+    owner: root
+    group: root
+
+- name: Initialize the cluster via kubeadm
+  command: "kubeadm init --config=/root/kubeadm-config.yaml"
+
+- name: Generate the kubeadm join string
+  command: kubeadm --config /root/kubeadm-config.yaml token create --print-join-command
+  register: kubeadm_jstring
+
+- name: Save the kubeadm worker join string
+  set_fact:
+    kubeadm_worker_join_string: "{{ kubeadm_jstring.stdout }}"
+
+- name: Generate the kubeadm certificate key
+  command: kubeadm --config /root/kubeadm-config.yaml init phase upload-certs --upload-certs
+  register: kubeadm_cert_key
+
+- name: Save the kubeadm certificate key
+  set_fact:
+    kubeadm_certificate_key: "{{ kubeadm_cert_key.stdout.split('\n') | last }}"
+
+- name: Save the kubeadm control plane join string
+  set_fact:
+    kubeadm_control_plane_join_string: "{{ hostvars[groups['k8s_initial_controller'][0]].kubeadm_worker_join_string }} --control-plane --certificate-key {{ hostvars[groups['k8s_initial_controller'][0]].kubeadm_certificate_key }}"
+
+- name: Install Calico for pod and service networking
+  command: "kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /root/calico.yaml"
+  retries: 3
+  delay: 3
+
+- name: Write the MetalLB yaml
+  template:
+    src: "{{ role_path }}/templates/metallb.yaml.j2"
+    dest: /root/metallb.yaml
+    mode: 0660
+    owner: root
+    group: root
+
+- name: Install MetalLB as the LoadBalancer controller
+  command: "kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /root/metallb.yaml"
+  retries: 3
+  delay: 3
+
+- name: Write the Kubernetes Dashboard yaml
+  template:
+    src: "{{ role_path }}/templates/kube-dashboard.yaml.j2"
+    dest: /root/kube-dashboard.yaml
+    mode: 0660
+    owner: root
+    group: root
+
+- name: Write the Kubernetes Dashboard bearer token helper script
+  template:
+    src: "{{ role_path }}/templates/kube-dashboard-get-token.sh.j2"
+    dest: /root/kube-dashboard-get-token.sh
+    mode: 0770
+    owner: root
+    group: root
+
+- name: Deploy Kubernetes Dashboard
+  command: "kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /root/kube-dashboard.yaml"
+  retries: 3
+  delay: 3
+
+- name: Get the bearer token for the access to the Kubernetes Dashboard
+  command: /root/kube-dashboard-get-token.sh
+  register: kube_dashboard_token
+
+- name: Save the bearer token for the access to the Kubernetes Dashboard
+  set_fact:
+    kube_dashboard_bearer_token: "{{ kube_dashboard_token.stdout }}"
+
+- name: Write the HAProxy yaml
+  template:
+    src: "{{ role_path }}/templates/haproxy-ingress.yaml.j2"
+    dest: /root/haproxy-ingress.yaml
+    mode: 0660
+    owner: root
+    group: root
+
+- name: Install HAProxy Kubernetes Ingress as the Ingress controller
+  command: "kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /root/haproxy-ingress.yaml"
+  retries: 3
+  delay: 3

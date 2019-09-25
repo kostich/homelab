@@ -1,0 +1,7 @@
+*.retry
+k8s/*
+dockerfiles/*
+ansible/certs/*/
+ansible/certs/*.crt
+ansible/certs/*.key
+ansible/certs/*.srl

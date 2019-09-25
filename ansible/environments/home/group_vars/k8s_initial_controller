@@ -1,0 +1,5 @@
+image_repository: "xn--80affn5ahdcfkc.xn--h1admmf5m.xn--d1aqf" # "регистратор.костић.дом"
+control_plane_endpoint: "xn--8-stbw.xn--h1admmf5m.xn--d1aqf:6443" # "к8с.костић.дом:6443"
+pod_subnet: "10.244.0.0/16"
+metallb_subnet: "10.0.64.0/18"
+ingress_controller_lb_ip: "10.0.64.1"

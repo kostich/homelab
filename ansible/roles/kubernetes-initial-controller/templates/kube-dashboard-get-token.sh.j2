@@ -1,0 +1,2 @@
+#!/bin/bash
+kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system describe secret $(kubectl --kubeconfig /etc/kubernetes/admin.conf -n kube-system get secret | awk '/^admin-user/{print $1}') | awk '$1=="token:"{print $2}'

@@ -1,0 +1,88 @@
+---
+
+- name: Install Docker, pip and jq
+  dnf:
+    name: ["docker-ce", "docker-ce-cli", "containerd.io", "python3-pip", "jq"]
+    state: present
+    update_cache: yes
+
+- name: Install docker pip module
+  pip:
+    name: docker
+    executable: pip3
+
+- name: Stop Docker
+  systemd:
+    name: docker
+    state: stopped
+
+- name: Remove existing Docker containers
+  file:
+    path: /var/lib/docker
+    state: absent
+
+- name: Restart and enable Docker
+  systemd:
+    name: docker
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
+
+- name: Create the storage dir for the registry
+  file:
+    path: /var/lib/registry
+    state: directory
+
+- name: Copy over the registry container image
+  copy:
+    src: "{{ role_path }}/tarballs/registry.tar"
+    dest: "/tmp/registry.tar"
+
+- name: Import the registry container image
+  docker_image:
+    name: "registry:2.7.1"
+    load_path: "/tmp/registry.tar"
+    state: present
+
+- name: Copy TLS key file
+  copy:
+    src: "{{ role_path }}/../../certs/registrator.kostic.dom/registrator.kostic.dom.key"
+    dest: "/etc/pki/tls/private/registrator.kostic.dom.key"
+    owner: root
+    group: root
+    mode: 0664
+
+- name: Copy TLS crt file
+  copy:
+    src: "{{ role_path }}/../../certs/registrator.kostic.dom/registrator.kostic.dom.crt"
+    dest: "/etc/pki/tls/private/registrator.kostic.dom.crt"
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Start the registry container
+  docker_container:
+    name: registry
+    image: registry:2.7.1
+    state: started
+    volumes: 
+      - /var/lib/registry:/var/lib/registry:rw
+      - /etc/pki/tls/private:/certs:ro
+    env: 
+      REGISTRY_HTTP_ADDR: "0.0.0.0:443"
+      REGISTRY_HTTP_TLS_CERTIFICATE: "/certs/registrator.kostic.dom.crt"
+      REGISTRY_HTTP_TLS_KEY: "/certs/registrator.kostic.dom.key"
+    restart_policy: always
+    published_ports: "0.0.0.0:443:443"
+
+- name: Write the update-registry shell script
+  template:
+    src: "{{ role_path }}/templates/update-registry.sh.j2"
+    dest: /usr/bin/update-registry.sh
+    mode: 0775
+    owner: root
+    group: root
+
+- name: Update the registry
+  command: bash /usr/bin/update-registry.sh
+  become: yes

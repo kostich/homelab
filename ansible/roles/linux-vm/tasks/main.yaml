@@ -1,0 +1,182 @@
+---
+
+- name: Add the hostname to the hosts file
+  lineinfile:
+    path: /etc/hosts
+    regexp: '^127\.0\.0\.1'
+    line: 127.0.0.1 localhost {{ inventory_hostname }}
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Create the swapfile
+  command: dd if=/dev/zero of=/swapfile bs=1M count={{ swapfile_size }}
+  when: 
+    - ansible_swaptotal_mb < 1
+    - swapfile_size > 0
+
+- name: Format the swapfile
+  command: mkswap /swapfile
+  when: 
+    - ansible_swaptotal_mb < 1
+    - swapfile_size > 0
+
+- name: Change swapfile ownership
+  file:
+    path: /swapfile
+    owner: root
+    group: root
+    mode: 0600
+  when: 
+    - ansible_swaptotal_mb < 1
+    - swapfile_size > 0
+
+- name: Add swapfile to fstab
+  mount:
+    name: none
+    src: /swapfile
+    fstype: swap
+    opts: sw
+    passno: "0"
+    dump: "0"
+    state: present
+  when: 
+    - ansible_swaptotal_mb < 1
+    - swapfile_size > 0
+
+- name: Activate swapfile
+  command: swapon -a
+  when: 
+    - ansible_swaptotal_mb < 1
+    - swapfile_size > 0
+
+- name: Set the root user ext4 space reservation
+  command: tune2fs -m {{ root_percentage }} /dev/vda1
+
+- name: Setup custom DNS server
+  lineinfile:
+    path: /etc/sysconfig/network-scripts/ifcfg-eth0
+    line: |
+        PEERDNS=no
+        DNS1={{ dns_ip }}
+    create: yes
+    state: present
+
+- name: Restart NetworkManager
+  systemd:
+    name: NetworkManager
+    state: restarted
+
+- name: Copy our custom CA
+  copy:
+    src: "{{ role_path }}/../../certs/rootCA.crt"
+    dest: "/etc/pki/ca-trust/source/anchors/kosticRootCA.crt"
+    owner: root
+    group: root
+    mode: 0640
+
+- name: Update CA root store
+  command: update-ca-trust
+  become: yes
+  become_user: root
+  become_method: sudo
+
+- name: Limit service logs space usage in systemd journal
+  blockinfile:
+    dest: /etc/systemd/journald.conf
+    block: |
+      SystemMaxUse=1024M
+      RuntimeMaxUse=1024M
+
+- name: Restart journald to apply new service logs space usage limitation
+  systemd:
+    name: systemd-journald
+    state: restarted
+    daemon_reload: yes
+
+- name: Disable fedora-modular repo
+  replace:
+    dest: /etc/yum.repos.d/fedora-modular.repo
+    regexp: 'enabled=1'
+    replace: 'enabled=0'
+
+- name: Disable fedora-updates-modular repo
+  replace:
+    dest: /etc/yum.repos.d/fedora-updates-modular.repo
+    regexp: 'enabled=1'
+    replace: 'enabled=0'
+
+- name: Reconfigure the fedora repository to use the local mirror
+  yum_repository:
+    name: fedora
+    description: Fedora $releasever - $basearch
+    failovermethod: priority
+    baseurl: "https://{{ mirror_domain }}/fedora/"
+    enabled: yes
+    metadata_expire: "7d"
+    repo_gpgcheck: no
+    gpgcheck: yes
+    gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch"
+    skip_if_unavailable: no
+  when: inventory_hostname not in groups['mirrors']
+
+- name: Reconfigure the fedora-updates repository to use the local mirror
+  yum_repository:
+    name: updates
+    file: fedora-updates
+    description: Fedora $releasever - $basearch - Updates
+    failovermethod: priority
+    baseurl: "https://{{ mirror_domain }}/updates/"
+    enabled: yes
+    metadata_expire: "6h"
+    repo_gpgcheck: no
+    gpgcheck: yes
+    gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch"
+    skip_if_unavailable: no
+  when: inventory_hostname not in groups['mirrors']
+
+- name: Add the docker-ce-stable repository
+  yum_repository:
+    name: docker-ce-stable
+    description: Docker CE Stable - $basearch
+    baseurl: "https://{{ mirror_domain }}/docker-ce-stable/"
+    enabled: yes
+    gpgcheck: yes
+    gpgkey: "https://{{ mirror_domain }}/docker-ce-stable/gpg"
+  when: (inventory_hostname in groups['k8s_controllers']) or 
+        (inventory_hostname in groups['k8s_workers_generic']) or
+        (inventory_hostname in groups['k8s_workers_storage']) or
+        (inventory_hostname in groups['registries'])
+
+- name: Add the kubernetes repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes - $basearch
+    baseurl: "https://{{ mirror_domain }}/kubernetes/"
+    enabled: yes
+    gpgcheck: no
+  when: (inventory_hostname in groups['k8s_controllers']) or 
+        (inventory_hostname in groups['k8s_workers_generic']) or 
+        (inventory_hostname in groups['k8s_workers_storage'])
+
+- name: Disable delta RPMS
+  lineinfile:
+    path: /etc/dnf/dnf.conf
+    line: 'deltarpm=0'
+    create: yes
+  when: inventory_hostname not in groups['mirrors']
+
+- name: Update the node
+  dnf:
+    name: "*"
+    state: latest
+    update_cache: yes
+
+- name: Install the default packages
+  dnf:
+    name: ["vim-minimal", "htop", "iotop", "nethogs", "ncdu", "curl", "tmux", "bind-utils", "rsync"]
+    state: present
+    update_cache: yes
+
+- name: Reboot the node
+  reboot:

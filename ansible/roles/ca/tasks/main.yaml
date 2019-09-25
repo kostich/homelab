@@ -1,0 +1,53 @@
+- name: Install Golang compiler, git and make
+  dnf:
+    name: ["golang", "git", "make"]
+    state: present
+    update_cache: yes
+
+- name: Create GOPATH dir
+  file:
+    path: /home/{{ ansible_user }}/.go
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+
+- name: Download and compile mkcert
+  become: yes
+  become_user: "{{ ansible_user }}"
+  shell: |
+    export GOPATH=/home/{{ ansible_user }}/.go && \
+    go get -u {{ mkcert_go_get_url }}
+
+- name: Install mkcert binary system-wide
+  become: yes
+  become_user: root
+  become_method: sudo
+  shell: mv /home/{{ ansible_user }}/.go/bin/mkcert /usr/local/bin/
+
+- name: Install mkcert CA to the root store
+  become: yes
+  become_user: "{{ ansible_user }}"
+  shell: mkcert -install
+
+- name: Clone the cfssl git repo
+  become: yes
+  become_user: "{{ ansible_user }}"
+  git:
+    repo: https://github.com/cloudflare/cfssl.git
+    dest: /home/{{ ansible_user }}/.go/src/github.com/cloudflare/cfssl
+    version: master
+
+- name: Compile cfssl
+  become: yes
+  become_user: "{{ ansible_user }}"
+  shell: |
+    export GOPATH=/home/{{ ansible_user }}/.go && \
+    cd $GOPATH/src/github.com/cloudflare/cfssl && make -j$(nproc)
+
+- name: Install mkcert binary system-wide
+  become: yes
+  become_user: root
+  become_method: sudo
+  shell: |
+    export GOPATH=/home/{{ ansible_user }}/.go && \
+    mv $GOPATH/src/github.com/cloudflare/cfssl/bin/* /usr/local/bin/

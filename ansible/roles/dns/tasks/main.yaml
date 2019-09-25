@@ -1,0 +1,60 @@
+---
+- name: Stop and disable systemd-resolved
+  systemd:
+    name: systemd-resolved
+    daemon_reload: yes
+    state: stopped
+    enabled: no
+    masked: no
+
+- name: Add the coredns user
+  user:
+    name: coredns
+    comment: CoreDNS user
+
+- name: Copy CoreDNS binary
+  copy:
+    src: "{{ role_path }}/binaries/coredns"
+    dest: /usr/bin/coredns
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create the config directory
+  file:
+    path: /etc/coredns
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Write the Corefile
+  template:
+    src: "{{ role_path }}/templates/Corefile.j2"
+    dest: /etc/coredns/Corefile
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Write the zone.db file
+  template:
+    src: "{{ role_path }}/templates/zone.db.j2"
+    dest: /etc/coredns/zone.db
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Write the systemd unit file
+  template:
+    src: "{{ role_path }}/templates/coredns.service.j2"
+    dest: /etc/systemd/system/coredns.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Enable and start CoreDNS via systemd
+  systemd:
+    name: coredns
+    daemon_reload: yes
+    state: restarted
+    enabled: yes

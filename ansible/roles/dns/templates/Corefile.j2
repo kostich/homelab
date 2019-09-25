@@ -1,0 +1,13 @@
+.:{{ dns_port }} {
+    forward . {{ primary_dns }} {{ secondary_dns }}
+    cache
+    log
+    errors
+}
+
+{{ domain }}:{{ dns_port }} {
+    file /etc/coredns/zone.db
+    cache
+    log
+    errors
+}

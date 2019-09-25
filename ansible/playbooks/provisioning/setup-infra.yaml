@@ -1,0 +1,134 @@
+---
+
+# First setup the CoreDNS DNS server
+- hosts: dns_servers
+  roles:
+    - role: dns
+      vars:
+        primary_dns: 1.1.1.1    # cloudflare
+        secondary_dns: 8.8.8.8  # google
+        domain: xn--h1admmf5m.xn--d1aqf # костић.дом
+        dns_master: xn--80aueki.xn--h1admmf5m.xn--d1aqf # марко.костић.дом
+        dns_port: 53
+
+# Setup Fedora mirror with most important RPMs and update the VM
+- hosts: mirrors
+  roles:
+    - role: linux-vm
+      vars:
+        swapfile_size: 2048
+        root_percentage: 1
+    - role: mirror
+
+# Update the DNS VM now but with the packages from our mirror
+# and configure it to be the loadbalancer, as well
+- hosts: dns_servers
+  roles:
+    - role: linux-vm
+      vars:
+        swapfile_size: 2048
+        root_percentage: 1
+    - role: dns
+      vars:
+        primary_dns: 1.1.1.1    # cloudflare
+        secondary_dns: 8.8.8.8  # google
+        domain: xn--h1admmf5m.xn--d1aqf # костић.дом
+        dns_master: xn--80aueki.xn--h1admmf5m.xn--d1aqf # марко.костић.дом
+        dns_port: 53
+    - role: loadbalancer
+
+# Update the registry VM now but with the packages from our mirror
+# Set it up as the registry server
+- hosts: registries
+  roles:
+    - role: linux-vm
+      vars:
+        swapfile_size: 2048
+        root_percentage: 1
+    - role: registry
+
+# Temporarily configure loadbalancer to proxy K8s API to only the initial controller
+- hosts: loadbalancers
+  tasks:
+    - name: Reconfigure HAPRoxy to temporarily do not loadbalance K8s API to controller 1
+      replace:
+        dest: /etc/haproxy/haproxy.cfg
+        regexp: ' server controller1'
+        replace: ' #server controller1'
+
+    - name: Reconfigure HAPRoxy to temporarily do not loadbalance K8s API to controller 2
+      replace:
+        dest: /etc/haproxy/haproxy.cfg
+        regexp: ' server controller2'
+        replace: ' #server controller2'
+
+    - name: Restart haproxy
+      systemd:
+        name: haproxy
+        state: restarted
+
+# Update the Kubernetes initial controller now but with the packages from our mirror
+# and then initialize it
+- hosts: k8s_initial_controller
+  roles:
+    # - role: linux-vm
+    #   vars:
+    #     swapfile_size: 0
+    #     root_percentage: 1
+    - role: kubernetes-initial-controller
+
+# Update the Kubernetes joined controllers now but with the packages from our mirror
+# and join them to the initial controller
+- hosts: k8s_joined_controllers
+  serial: 1
+  roles:
+    # - role: linux-vm
+    #   vars:
+    #     swapfile_size: 0
+    #     root_percentage: 1
+    - role: kubernetes-joined-controller
+
+# Update the Kubernetes joined workers now but with the packages from our mirror
+# and join them to the cluster
+- hosts: k8s_workers_generic:k8s_workers_storage
+  serial: 1
+  roles:
+    # - role: linux-vm
+    #   vars:
+    #     swapfile_size: 0
+    #     root_percentage: 1
+    - role: kubernetes-joined-worker
+
+# Configure loadbalancer to loadbalance K8s API to all controllers
+- hosts: loadbalancers
+  tasks:
+    - name: Reconfigure HAPRoxy to loadbalance K8s API to controller 1
+      replace:
+        dest: /etc/haproxy/haproxy.cfg
+        regexp: '#server controller1'
+        replace: 'server controller1'
+
+    - name: Reconfigure HAPRoxy to loadbalance K8s API to controller 2
+      replace:
+        dest: /etc/haproxy/haproxy.cfg
+        regexp: '#server controller2'
+        replace: 'server controller2'
+
+    - name: Restart haproxy
+      systemd:
+        name: haproxy
+        state: restarted
+
+- hosts: k8s_initial_controller
+  tasks:
+    - name: Assign the worker role to all worker nodes
+      command: "kubectl --kubeconfig /etc/kubernetes/admin.conf label node {{ item }} node-role.kubernetes.io/worker-generic= role=worker-node"
+      loop: "{{ query('inventory_hostnames', 'k8s_workers_generic') }}"
+
+    - name: Assign the storager role to all storager nodes
+      command: "kubectl --kubeconfig /etc/kubernetes/admin.conf label node {{ item }} node-role.kubernetes.io/worker-storage= role=storage-node"
+      loop: "{{ query('inventory_hostnames', 'k8s_workers_storage') }}"
+
+    - name: Display the Bearer Token for the access to the Kubernetes Dashboard
+      debug:
+        msg: "To access the Dashboard, use the bearer token: {{ hostvars[groups['k8s_initial_controller'][0]].kube_dashboard_bearer_token }}"

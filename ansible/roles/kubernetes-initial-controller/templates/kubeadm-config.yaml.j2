@@ -1,0 +1,33 @@
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+cpuManagerPolicy: static
+cgroupDriver: systemd
+nodeStatusUpdateFrequency: "4s"
+systemReserved:
+  cpu: 500m
+  memory: 256M
+kubeReserved:
+  cpu: 500m
+  memory: 256M
+maxPods: 110
+
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: stable
+imageRepository: "{{ image_repository }}"
+controlPlaneEndpoint: "{{ control_plane_endpoint }}"
+networking:
+  podSubnet: "{{ pod_subnet }}"
+  serviceSubnet: "{{ pod_subnet }}"
+controllerManager:
+  extraArgs:
+    node-monitor-period: "2s"
+    node-monitor-grace-period: "16s"
+    pod-eviction-timeout: "18s"
+# https://github.com/kubernetes/kubernetes/issues/72395#issuecomment-512260133
+apiServer:
+  extraArgs:
+    default-not-ready-toleration-seconds: "12"
+    default-unreachable-toleration-seconds: "12"

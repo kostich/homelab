@@ -1,0 +1,75 @@
+---
+- hosts: web_servers
+  tasks:
+    - name: Stop Mattermost
+      systemd:
+        name: mattermost
+        state: stopped
+        enabled: yes
+
+    - name: Remove old copy of the installation
+      file:
+        path: /opt/mtold
+        state: absent
+
+    - name: Rename current installation folder
+      shell: mv /opt/mattermost /opt/mtold
+
+    - name: Download latest Mattermost archive
+      get_url:
+        url: "{{ mattermost_download_url }}"
+        dest: /opt/mtnew.tar.gz
+
+    - name: Recreate unpack folder path
+      file:
+        path: /opt/mattermost
+        state: directory
+        recurse: yes
+
+    - name: Unpack the latest Mattermost
+      unarchive:
+        remote_src: yes
+        src: /opt/mtnew.tar.gz
+        dest: /opt/
+
+    - name: Remove the downloaded Mattermost archive
+      file:
+        path: /opt/mtnew.tar.gz
+        state: absent
+        
+    - name: Remove config file and data folder in the unpacked Mattermost folder
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /opt/mattermost/data
+        - /opt/mattermost/config/config.json
+
+    - name: Copy over old config file
+      copy:
+        remote_src: yes
+        src: /opt/mtold/config/config.json
+        dest: /opt/mattermost/config/config.json
+
+    - name: Copy over old data folder
+      synchronize:
+        src: /opt/mtold/data
+        dest: /opt/mattermost/
+      delegate_to: "{{ inventory_hostname }}"
+
+    - name: Change ownership
+      file:
+        path: /opt/mattermost
+        owner: mattermost
+        group: mattermost
+        recurse: yes
+
+    - name: Start Mattermost
+      systemd:
+        name: mattermost
+        state: started
+    
+    - name: Remove old backup
+      file:
+        path: /opt/mtold
+        state: absent

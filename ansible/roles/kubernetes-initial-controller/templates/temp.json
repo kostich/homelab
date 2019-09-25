@@ -1,0 +1,204 @@
+{
+  "apiVersion": "v1",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "creationTimestamp": "2019-09-24T21:10:08Z",
+        "name": "default",
+        "resourceVersion": "143",
+        "selfLink": "/api/v1/namespaces/default",
+        "uid": "f1d3e695-9cf2-45ba-8269-eb6852d8bb09"
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"annotations\":{},\"name\":\"haproxy-controller\"}}\n"
+        },
+        "creationTimestamp": "2019-09-24T21:10:43Z",
+        "name": "haproxy-controller",
+        "resourceVersion": "579",
+        "selfLink": "/api/v1/namespaces/haproxy-controller",
+        "uid": "b0708cb9-fe15-4b89-8334-d627e726080c"
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "creationTimestamp": "2019-09-24T21:10:01Z",
+        "name": "kube-node-lease",
+        "resourceVersion": "36",
+        "selfLink": "/api/v1/namespaces/kube-node-lease",
+        "uid": "bcbf11b6-5afd-499f-9a67-2d6ad8068c60"
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "creationTimestamp": "2019-09-24T21:10:01Z",
+        "name": "kube-public",
+        "resourceVersion": "35",
+        "selfLink": "/api/v1/namespaces/kube-public",
+        "uid": "399c9798-e11f-47f4-8c2b-206228f85ced"
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "creationTimestamp": "2019-09-24T21:10:01Z",
+        "name": "kube-system",
+        "resourceVersion": "25",
+        "selfLink": "/api/v1/namespaces/kube-system",
+        "uid": "9fa7c3b7-ab2f-4fc4-a2b4-91a108fca55e"
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"annotations\":{},\"name\":\"kubernetes-dashboard\"}}\n"
+        },
+        "creationTimestamp": "2019-09-24T21:10:39Z",
+        "name": "kubernetes-dashboard",
+        "resourceVersion": "507",
+        "selfLink": "/api/v1/namespaces/kubernetes-dashboard",
+        "uid": "4f7fca45-813a-4cfe-9565-10270a603e83"
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"annotations\":{},\"labels\":{\"app\":\"metallb\"},\"name\":\"metallb-system\"}}\n"
+        },
+        "creationTimestamp": "2019-09-24T21:10:31Z",
+        "labels": {
+          "app": "metallb"
+        },
+        "name": "metallb-system",
+        "resourceVersion": "381",
+        "selfLink": "/api/v1/namespaces/metallb-system",
+        "uid": "1350b613-f8d6-41e7-b0a8-9554250088ce"
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "phase": "Active"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "annotations": {
+          "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"v1\",\"kind\":\"Namespace\",\"metadata\":{\"annotations\":{},\"name\":\"rook-ceph\"}}\n"
+        },
+        "creationTimestamp": "2019-09-25T07:00:01Z",
+        "deletionTimestamp": "2019-09-25T07:01:43Z",
+        "name": "rook-ceph",
+        "resourceVersion": "43835",
+        "selfLink": "/api/v1/namespaces/rook-ceph",
+        "uid": "33e50d39-5d95-4a83-9112-69bdd8f952a2"
+      },
+      "spec": {
+        "finalizers": [
+          "kubernetes"
+        ]
+      },
+      "status": {
+        "conditions": [
+          {
+            "lastTransitionTime": "2019-09-25T07:02:27Z",
+            "message": "All resources successfully discovered",
+            "reason": "ResourcesDiscovered",
+            "status": "False",
+            "type": "NamespaceDeletionDiscoveryFailure"
+          },
+          {
+            "lastTransitionTime": "2019-09-25T07:02:27Z",
+            "message": "All legacy kube types successfully parsed",
+            "reason": "ParsedGroupVersions",
+            "status": "False",
+            "type": "NamespaceDeletionGroupVersionParsingFailure"
+          },
+          {
+            "lastTransitionTime": "2019-09-25T07:02:35Z",
+            "message": "All content successfully deleted",
+            "reason": "ContentDeleted",
+            "status": "False",
+            "type": "NamespaceDeletionContentFailure"
+          }
+        ],
+        "phase": "Terminating"
+      }
+    }
+  ],
+  "kind": "List",
+  "metadata": {
+    "resourceVersion": "",
+    "selfLink": ""
+  },
+  "spec": {
+    "finalizers": []
+  }
+}

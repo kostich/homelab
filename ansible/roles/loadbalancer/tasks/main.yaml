@@ -1,0 +1,69 @@
+---
+- name: Install haproxy
+  dnf:
+    name: haproxy
+    state: present
+    update_cache: yes
+
+- name: Create the haproxy enhancement dir
+  file:
+    path: /etc/systemd/system/haproxy.service.d
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Write the haproxy enhancement
+  template:
+    src: "{{ role_path }}/templates/restart-always.conf.j2"
+    dest: /etc/systemd/system/haproxy.service.d/restart-always.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Remove existing haproxy config
+  file:
+    path: /etc/haproxy/haproxy.cfg
+    state: absent
+
+- name: Tell SELinux to allow HAProxy to connect to any port
+  seboolean:
+    name: haproxy_connect_any
+    state: on
+    persistent: yes
+
+- name: Write the haproxy config
+  blockinfile:
+    dest: /etc/haproxy/haproxy.cfg
+    create: yes
+    block: |
+        frontend k8s
+                # bind *:80
+                # bind *:443
+                bind *:6443
+                mode tcp
+                # acl http dst_port 80
+                # acl https dst_port 443
+                acl k8s_api dst_port 6443
+                # use_backend k8s_ingress_http if http
+                # use_backend k8s_ingress_https if https
+                use_backend k8s_api_backends if k8s_api
+        backend k8s_api_backends
+                mode tcp
+                balance roundrobin
+                server controller0 {{ api_backend_0 }}:6443 check inter 10s
+                server controller1 {{ api_backend_1 }}:6443 check inter 10s
+                server controller2 {{ api_backend_2 }}:6443 check inter 10s
+        # backend k8s_ingress_http
+        #         mode tcp
+        #         server ingress_lb_ip {{ ingress_lb_ip }}:80 check inter 5s
+        # backend k8s_ingress_https
+        #         mode tcp
+        #         server ingress_lb_ip {{ ingress_lb_ip }}:443 check inter 5s
+
+- name: Enable and start haproxy via systemd
+  systemd:
+    name: haproxy
+    daemon_reload: yes
+    state: restarted
+    enabled: yes
