@@ -71,10 +71,10 @@
 # and then initialize it
 - hosts: k8s_initial_controller
   roles:
-    # - role: linux-vm
-    #   vars:
-    #     swapfile_size: 0
-    #     root_percentage: 1
+    - role: linux-vm
+      vars:
+        swapfile_size: 0
+        root_percentage: 1
     - role: kubernetes-initial-controller
 
 # Update the Kubernetes joined controllers now but with the packages from our mirror
@@ -82,10 +82,10 @@
 - hosts: k8s_joined_controllers
   serial: 1
   roles:
-    # - role: linux-vm
-    #   vars:
-    #     swapfile_size: 0
-    #     root_percentage: 1
+    - role: linux-vm
+      vars:
+        swapfile_size: 0
+        root_percentage: 1
     - role: kubernetes-joined-controller
 
 # Update the Kubernetes joined workers now but with the packages from our mirror
@@ -93,10 +93,10 @@
 - hosts: k8s_workers_generic:k8s_workers_storage
   serial: 1
   roles:
-    # - role: linux-vm
-    #   vars:
-    #     swapfile_size: 0
-    #     root_percentage: 1
+    - role: linux-vm
+      vars:
+        swapfile_size: 0
+        root_percentage: 1
     - role: kubernetes-joined-worker
 
 # Configure loadbalancer to loadbalance K8s API to all controllers
