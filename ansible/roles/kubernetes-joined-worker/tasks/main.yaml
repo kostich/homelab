@@ -76,6 +76,9 @@
 
 - name: Reset any existing cluster data
   command: kubeadm reset -f
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Remove etcd data folder
   file:
@@ -94,8 +97,14 @@
     - iptables -t nat -F
     - iptables -t mangle -F
     - iptables -X
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Join the node as a worker to the cluster
   command: "{{ hostvars[groups['k8s_initial_controller'][0]].kubeadm_worker_join_string }}"
   retries: 3
   delay: 3
+  become: yes
+  become_user: root
+  become_method: sudo

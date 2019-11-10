@@ -14,12 +14,18 @@
   when: 
     - ansible_swaptotal_mb < 1
     - swapfile_size > 0
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Format the swapfile
   command: mkswap /swapfile
   when: 
     - ansible_swaptotal_mb < 1
     - swapfile_size > 0
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Change swapfile ownership
   file:
@@ -49,9 +55,15 @@
   when: 
     - ansible_swaptotal_mb < 1
     - swapfile_size > 0
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Set the root user ext4 space reservation
   command: tune2fs -m {{ root_percentage }} /dev/vda1
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Setup custom DNS server
   lineinfile:
@@ -176,6 +188,12 @@
     name: ["vim-minimal", "htop", "iotop", "nethogs", "ncdu", "curl", "wget", "tmux", "bind-utils", "rsync"]
     state: present
     update_cache: yes
+
+- name: Disable cgroups v2
+  command: grubby --update-kernel=ALL --args="systemd.unified_cgroup_hierarchy=0"
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Reboot the node
   reboot:

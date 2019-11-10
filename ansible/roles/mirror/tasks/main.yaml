@@ -156,3 +156,5 @@
 - name: Setup/update mirror
   command: bash /usr/bin/update-mirror.sh
   become: yes
+  become_user: root
+  become_method: sudo

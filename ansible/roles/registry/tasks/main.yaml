@@ -86,3 +86,5 @@
 - name: Update the registry
   command: bash /usr/bin/update-registry.sh
   become: yes
+  become_user: root
+  become_method: sudo

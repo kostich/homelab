@@ -47,6 +47,9 @@
 
 - name: Reset any existing cluster data
   command: kubeadm reset -f
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Remove etcd data folder
   file:
@@ -65,6 +68,9 @@
     - iptables -t nat -F
     - iptables -t mangle -F
     - iptables -X
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Write the kubeadm config file
   template:
@@ -117,6 +123,9 @@
 - name: Generate the kubeadm join string
   command: kubeadm --config /root/kubeadm-config.yaml token create --print-join-command
   register: kubeadm_jstring
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Save the kubeadm worker join string
   set_fact:
@@ -125,6 +134,9 @@
 - name: Generate the kubeadm certificate key
   command: kubeadm --config /root/kubeadm-config.yaml init phase upload-certs --upload-certs
   register: kubeadm_cert_key
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Save the kubeadm certificate key
   set_fact:
@@ -138,6 +150,9 @@
   command: "kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /root/calico.yaml"
   retries: 3
   delay: 3
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Write the MetalLB yaml
   template:
@@ -151,6 +166,9 @@
   command: "kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /root/metallb.yaml"
   retries: 3
   delay: 3
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Write the Kubernetes Dashboard yaml
   template:
@@ -176,6 +194,9 @@
 - name: Get the bearer token for the access to the Kubernetes Dashboard
   command: /root/kube-dashboard-get-token.sh
   register: kube_dashboard_token
+  become: yes
+  become_user: root
+  become_method: sudo
 
 - name: Save the bearer token for the access to the Kubernetes Dashboard
   set_fact:
@@ -193,3 +214,6 @@
   command: "kubectl --kubeconfig /etc/kubernetes/admin.conf apply -f /root/haproxy-ingress.yaml"
   retries: 3
   delay: 3
+  become: yes
+  become_user: root
+  become_method: sudo
