@@ -51,6 +51,12 @@
     group: root
     mode: '0644'
 
+- name: Configure httpd to display full filenames in indexes
+  replace:
+    path: /etc/httpd/conf.d/autoindex.conf
+    regexp: '^IndexOptions FancyIndexing HTMLTable VersionSort$'
+    replace: 'IndexOptions FancyIndexing HTMLTable VersionSort NameWidth=*'
+
 - name: Redirect HTTP traffic to HTTPS
   blockinfile:
     dest: /etc/httpd/conf.d/80to443.conf

@@ -111,7 +111,7 @@
     name: fedora
     description: Fedora $releasever - $basearch
     failovermethod: priority
-    baseurl: "https://{{ mirror_domain }}/fedora/"
+    baseurl: "https://{{ mirror_domain }}/rpm/fedora/fedora/"
     enabled: yes
     metadata_expire: "7d"
     repo_gpgcheck: no
@@ -126,7 +126,7 @@
     file: fedora-updates
     description: Fedora $releasever - $basearch - Updates
     failovermethod: priority
-    baseurl: "https://{{ mirror_domain }}/updates/"
+    baseurl: "https://{{ mirror_domain }}/rpm/fedora/updates/"
     enabled: yes
     metadata_expire: "6h"
     repo_gpgcheck: no
@@ -139,10 +139,10 @@
   yum_repository:
     name: docker-ce-stable
     description: Docker CE Stable - $basearch
-    baseurl: "https://{{ mirror_domain }}/docker-ce-stable/"
+    baseurl: "https://{{ mirror_domain }}/rpm/fedora/docker-ce-stable/"
     enabled: yes
     gpgcheck: yes
-    gpgkey: "https://{{ mirror_domain }}/docker-ce-stable/gpg"
+    gpgkey: "https://{{ mirror_domain }}/rpm/fedora/docker-ce-stable/gpg"
   when: (inventory_hostname in groups['k8s_controllers']) or 
         (inventory_hostname in groups['k8s_workers_generic']) or
         (inventory_hostname in groups['registries'])
@@ -151,10 +151,10 @@
   yum_repository:
     name: kubernetes
     description: Kubernetes - $basearch
-    baseurl: "https://{{ mirror_domain }}/kubernetes/"
+    baseurl: "https://{{ mirror_domain }}/rpm/fedora/kubernetes/"
     enabled: yes
     gpgcheck: yes
-    gpgkey: "https://{{ mirror_domain }}/kubernetes/yum-key.gpg https://{{ mirror_domain }}/kubernetes/rpm-package-key.gpg"
+    gpgkey: "https://{{ mirror_domain }}/rpm/fedora/kubernetes/yum-key.gpg https://{{ mirror_domain }}/rpm/fedora/kubernetes/rpm-package-key.gpg"
   when: (inventory_hostname in groups['k8s_controllers']) or 
         (inventory_hostname in groups['k8s_workers_generic'])
 
@@ -173,7 +173,7 @@
 
 - name: Install the default packages
   dnf:
-    name: ["vim-minimal", "htop", "iotop", "nethogs", "ncdu", "curl", "tmux", "bind-utils", "rsync"]
+    name: ["vim-minimal", "htop", "iotop", "nethogs", "ncdu", "curl", "wget", "tmux", "bind-utils", "rsync"]
     state: present
     update_cache: yes
 
