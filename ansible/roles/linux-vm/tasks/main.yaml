@@ -153,9 +153,10 @@
     description: Kubernetes - $basearch
     baseurl: "https://{{ mirror_domain }}/kubernetes/"
     enabled: yes
-    gpgcheck: no
+    gpgcheck: yes
+    gpgkey: "https://{{ mirror_domain }}/kubernetes/yum-key.gpg https://{{ mirror_domain }}/kubernetes/rpm-package-key.gpg"
   when: (inventory_hostname in groups['k8s_controllers']) or 
-        (inventory_hostname in groups['k8s_workers_generic']) or 
+        (inventory_hostname in groups['k8s_workers_generic'])
 
 - name: Disable delta RPMS
   lineinfile:

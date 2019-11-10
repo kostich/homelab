@@ -80,6 +80,22 @@
     description: Docker CE Stable - $basearch
     baseurl: https://download.docker.com/linux/fedora/$releasever/$basearch/stable/
 
+- name: Import kubernetes yum gpg key to rpm db
+  rpm_key:
+    key: https://packages.cloud.google.com/yum/doc/yum-key.gpg
+    state: present
+
+- name: Import kubernetes rpm-package gpg key to rpm db
+  rpm_key:
+    key: https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    state: present
+
+- name: Add the kubernetes repository
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes - $basearch
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+
 - name: Import google-chrome gpg key to rpm db
   rpm_key:
     key: https://dl.google.com/linux/linux_signing_key.pub

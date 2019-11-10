@@ -1,5 +1,10 @@
 ---
 
+- name: Put SELinux in permissive mode
+  selinux:
+    policy: targeted
+    state: permissive
+
 - name: Install Kubernetes requirements
   dnf:
     name: ["kubeadm", "kubelet", "cri-tools", "kubernetes-cni", "docker-ce", "lvm2"]

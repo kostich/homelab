@@ -9,6 +9,13 @@ dnf reposync --repoid=docker-ce-stable --delete --downloadcomps \
                 --download-path=/var/www/html
 # Download docker-ce-stable gpg key
 curl https://download.docker.com/linux/fedora/gpg -o /var/www/html/docker-ce-stable/gpg
+# Download kubernetes repo
+dnf reposync --repoid=kubernetes --delete --downloadcomps \
+            --download-metadata --arch=x86_64,i686,noarch --newest-only \
+                --download-path=/var/www/html
+# Download kubernetes gpg keys
+curl https://packages.cloud.google.com/yum/doc/yum-key.gpg -o /var/www/html/kubernetes/yum-key.gpg
+curl https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg -o /var/www/html/kubernetes/rpm-package-key.gpg
 # Download google-chrome repo
 dnf reposync --repoid=google-chrome --delete --downloadcomps \
             --download-metadata --arch=x86_64,i686,noarch --newest-only \
