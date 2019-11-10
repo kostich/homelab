@@ -29,10 +29,10 @@ dnf reposync --repoid=fedora --delete --downloadcomps \
 dnf reposync --repoid=updates --delete --downloadcomps \
             --download-metadata --arch=x86_64,noarch --newest-only \
                 --download-path=/var/www/html
-# # Download fedora source repo
-# dnf reposync --repoid=fedora-source --source --delete --downloadcomps \
-#             --download-metadata --arch=x86_64,noarch --newest-only \
-#                 --download-path=/var/www/html
+# Download fedora source repo
+dnf reposync --repoid=fedora-source --source --delete --downloadcomps \
+            --download-metadata --arch=x86_64,noarch --newest-only \
+                --download-path=/var/www/html
 # Fix permissions
 chown -R root: /var/www/html/*
 restorecon -R /var/www/html
