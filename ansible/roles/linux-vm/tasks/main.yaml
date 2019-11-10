@@ -145,7 +145,6 @@
     gpgkey: "https://{{ mirror_domain }}/docker-ce-stable/gpg"
   when: (inventory_hostname in groups['k8s_controllers']) or 
         (inventory_hostname in groups['k8s_workers_generic']) or
-        (inventory_hostname in groups['k8s_workers_storage']) or
         (inventory_hostname in groups['registries'])
 
 - name: Add the kubernetes repository
@@ -157,7 +156,6 @@
     gpgcheck: no
   when: (inventory_hostname in groups['k8s_controllers']) or 
         (inventory_hostname in groups['k8s_workers_generic']) or 
-        (inventory_hostname in groups['k8s_workers_storage'])
 
 - name: Disable delta RPMS
   lineinfile:

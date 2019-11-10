@@ -1,7 +1,0 @@
-#cloud-config
-growpart:
-  mode: auto
-  devices: ['/']
-ssh_pwauth: False
-ssh_authorized_keys:
-    - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC6riKTFW2LA1d8b0OE95mFckEoRO/aysuWNsb54vgNlmKHk3lOk5aRGLgp7IdvueYaFedVwHaGb16frIXf2o3iQsQExj3zU5UNfOSzHOtCg/SLHV1hyd1UWT8p5AGKfs7OST0Bec7EN++gUQnbY5z8d6kwoVA8K1aJKYdetdkhprHJcYROitFFvSG151P0gXCGvO9LrCglYki2WGVzzBIL6IxDcGgloYmVJwUJ7mjnHNDM5ZYVonLE5c/0KgPJiQ2YiRM4usGbf2LvI0yKnKjJxcKQUVkzv55hx8f5DuWpnKHc3wYpE/kAcCEu0NT5SD+48GaFT+fSJyldVXsETIAx marko@skynet

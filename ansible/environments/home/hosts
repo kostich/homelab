@@ -26,11 +26,6 @@ home-k8s-worker-generic-0 ansible_host=xn--8---0-5ve2ajzpf8aqoho1a1i.xn--h1admmf
 home-k8s-worker-generic-1 ansible_host=xn--8---1-5ve2ajzpf8aqoho1a1i.xn--h1admmf5m.xn--d1aqf # к8с-радник-опште-1.костић.дом
 home-k8s-worker-generic-2 ansible_host=xn--8---2-5ve2ajzpf8aqoho1a1i.xn--h1admmf5m.xn--d1aqf # к8с-радник-опште-2.костић.дом
 
-[k8s_workers_storage]
-home-k8s-worker-storage-0 ansible_host=xn--8---0-5veb4ack3adrfbq3a5cri0a5k.xn--h1admmf5m.xn--d1aqf # к8с-радник-складиште-0.костић.дом
-home-k8s-worker-storage-1 ansible_host=xn--8---1-5veb4ack3adrfbq3a5cri0a5k.xn--h1admmf5m.xn--d1aqf # к8с-радник-складиште-1.костић.дом
-home-k8s-worker-storage-2 ansible_host=xn--8---2-5veb4ack3adrfbq3a5cri0a5k.xn--h1admmf5m.xn--d1aqf # к8с-радник-складиште-2.костић.дом
-
 [mirrors]
 home-mirror-0 ansible_host=xn--80afdd3adpg.xn--h1admmf5m.xn--d1aqf # огледало.костић.дом
 

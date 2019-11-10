@@ -90,7 +90,7 @@
 
 # Update the Kubernetes joined workers now but with the packages from our mirror
 # and join them to the cluster
-- hosts: k8s_workers_generic:k8s_workers_storage
+- hosts: k8s_workers_generic
   serial: 1
   roles:
     - role: linux-vm
@@ -124,10 +124,6 @@
     - name: Assign the worker role to all worker nodes
       command: "kubectl --kubeconfig /etc/kubernetes/admin.conf label node {{ item }} node-role.kubernetes.io/worker-generic= role=worker-node"
       loop: "{{ query('inventory_hostnames', 'k8s_workers_generic') }}"
-
-    - name: Assign the storager role to all storager nodes
-      command: "kubectl --kubeconfig /etc/kubernetes/admin.conf label node {{ item }} node-role.kubernetes.io/worker-storage= role=storage-node"
-      loop: "{{ query('inventory_hostnames', 'k8s_workers_storage') }}"
 
     - name: Display the Bearer Token for the access to the Kubernetes Dashboard
       debug:

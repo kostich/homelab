@@ -48,7 +48,7 @@
         post_reboot_delay: 15
 
 # TODO: Implement proper update procedure for k8s_controllers:k8s_workers_generic
-- hosts: k8s_workers_generic:k8s_workers_storage:k8s_controllers
+- hosts: k8s_workers_generic:k8s_controllers
   serial: 1
   tasks:
     - name: Stop Kubelet

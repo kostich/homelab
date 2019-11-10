@@ -16,7 +16,7 @@ resource "libvirt_cloudinit_disk" "home-k8s-worker-generic-0-cloudinit" {
 resource "libvirt_volume" "home-k8s-worker-generic-0-disk-system" {
   name = "home-k8s-worker-generic-0-disk-system.raw"
   pool = "disk-drives"
-  source = "/var/lib/libvirt/images/install-media/fedora-cloud-base-30-amd64.raw"
+  source = "/var/lib/libvirt/images/install-media/fedora-cloud-base-31-amd64.raw"
   format = "raw"
 }
 
