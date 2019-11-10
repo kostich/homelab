@@ -197,7 +197,7 @@ spec:
       hostNetwork: true
       containers:
       - name: speaker
-        image: {{ image_repository }}/speaker:master
+        image: {{ image_repository }}/speaker:v0.8
         imagePullPolicy: Always
         args:
         - --port=7472
@@ -261,7 +261,7 @@ spec:
         node-role.kubernetes.io/worker-generic: ""
       containers:
       - name: controller
-        image: {{ image_repository }}/controller:master
+        image: {{ image_repository }}/controller:v0.8
         imagePullPolicy: Always
         args:
         - --port=7472
