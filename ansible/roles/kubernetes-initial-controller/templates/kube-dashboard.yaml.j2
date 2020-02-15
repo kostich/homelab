@@ -211,7 +211,7 @@ spec:
         node-role.kubernetes.io/master: ""
       containers:
         - name: kubernetes-dashboard
-          image: {{ image_repository }}/dashboard:v2.0.0-beta8
+          image: {{ image_repository }}/dashboard:v2.0.0-rc5
           ports:
             - containerPort: 8443
               protocol: TCP
@@ -287,7 +287,7 @@ spec:
         node-role.kubernetes.io/master: ""
       containers:
         - name: dashboard-metrics-scraper
-          image: {{ image_repository }}/metrics-scraper:v1.0.2
+          image: {{ image_repository }}/metrics-scraper:v1.0.3
           ports:
             - containerPort: 8000
               protocol: TCP

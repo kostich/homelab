@@ -171,7 +171,7 @@ spec:
       serviceAccountName: haproxy-ingress-service-account
       containers:
       - name: haproxy-ingress
-        image: {{ image_repository }}/kubernetes-ingress:1.2.5
+        image: {{ image_repository }}/kubernetes-ingress:1.3.2
         args:
           - --default-ssl-certificate=default/tls-secret
           - --configmap=default/haproxy-configmap
