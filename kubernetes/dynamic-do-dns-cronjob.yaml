@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: infrastructure
+
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: dynamic-do-dns
+  namespace: infrastructure
+spec:
+  schedule: "*/1 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          containers:
+          - name: dynamic-do-dns
+            image: kostic/dynamic-do-dns:0.1.0-arm64
+            env:
+            - name: MYDOTOKEN
+              value: ""
+            - name: MYDODOMAINS
+              value: ""
+            - name: MYRESOLVER
+              value: "https://icanhazip.com"
+          restartPolicy: Never
